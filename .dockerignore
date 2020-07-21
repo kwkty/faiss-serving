@@ -1,0 +1,7 @@
+.gitignore
+.clang-format
+
+cmake-build-debug/
+test/
+
+README.md

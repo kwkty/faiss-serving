@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package faiss_serving.protos.index;
+
+service Index {
+    rpc Search (SearchRequest) returns (SearchReply) {}
+    rpc Add (AddRequest) returns (AddReply) {}
+    rpc AddWithId (AddWithIdRequest) returns (AddWithIdReply) {}
+    rpc RemoveIds (RemoveIdsRequest) returns (RemoveIdsReply) {}
+    rpc GetNtotal (GetNtotalRequest) returns (GetNtotalReply) {}
+    rpc Train (TrainRequest) returns (TrainReply) {}
+    rpc IsTrained (IsTrainedRequest) returns (IsTrainedReply) {}
+    rpc Reset (ResetRequest) returns (ResetReply) {}
+}
+
+message SearchRequest {
+    repeated float vectors = 1;
+    int64 k = 2;
+}
+
+message SearchResult {
+    repeated int64 ids = 1;
+    repeated float distances = 2;
+}
+
+message SearchReply {
+    repeated SearchResult results = 1;
+}
+
+message AddRequest {
+    repeated float vectors = 1;
+}
+
+message AddReply {
+}
+
+message AddWithIdRequest {
+    repeated float vectors = 1;
+    repeated int64 ids = 2;
+}
+
+message AddWithIdReply {
+}
+
+message RemoveIdsRequest {
+    repeated int64 ids = 1;
+}
+
+message RemoveIdsReply {
+}
+
+message GetNtotalRequest {
+}
+
+message GetNtotalReply {
+    int64 n = 1;
+}
+
+message TrainRequest {
+    repeated float vectors = 1;
+}
+
+message TrainReply {
+}
+
+message IsTrainedRequest {
+}
+
+message IsTrainedReply {
+    bool is_trained = 1;
+}
+
+message ResetRequest {
+}
+
+message ResetReply {
+}
