@@ -13,7 +13,7 @@ DEFINE_string(index_file_path, "", "path to faiss index file");
 
 int main(int argc, char **argv) {
   gflags::SetUsageMessage("A gRPC server for Faiss");
-  gflags::SetVersionString("0.1.0");
+  gflags::SetVersionString(FAISS_SERVING_VERSION);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   std::string server_address(FLAGS_host + ":" + FLAGS_port);
