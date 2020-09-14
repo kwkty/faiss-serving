@@ -1,11 +1,14 @@
 FROM debian:10 as build
 
-ARG BUILD_WITH_GPU=OFF
+ARG FAISS_SERVING_ENABLE_GPU=OFF
 
 WORKDIR /usr/local/src/faiss-serving
 
 RUN apt-get update \
-    && apt-get install -y cmake git gnupg2 golang wget software-properties-common lsb-release \
+    && apt-get install -y git gnupg2 golang wget software-properties-common lsb-release make \
+    # Install cmake
+    && wget "https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz" \
+    && tar --strip-components=1 -C /usr/local -xzvf cmake-3.18.2-Linux-x86_64.tar.gz \
     # Install MKL
     # https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-apt-repo.html
     && wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB \
@@ -21,10 +24,17 @@ COPY CMakeLists.txt .
 COPY protos/ ./protos/
 COPY src/ ./src/
 
-RUN cmake -DBUILD_TEST=OFF -DBUILD_WITH_GPU=$BUILD_WITH_GPU --target faiss_serving . \
+ENV MKLROOT=/opt/intel/mkl
+
+RUN cmake \
+        -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
+        -DFAISS_SERVING_ENABLE_GPU=${FAISS_SERVING_ENABLE_GPU} \
+        --target faiss_serving . \
     && make -j$(nproc)
 
-FROM gcr.io/distroless/base
+FROM gcr.io/distroless/base-debian10
 
-COPY --from=build /usr/local/src/faiss-serving/faiss_serving /faiss_serving
-CMD ["/faiss_grpc_server"]
+COPY --from=build /usr/lib/x86_64-linux-gnu/libgomp.so.1 /usr/lib/x86_64-linux-gnu/libgomp.so.1
+COPY --from=build /usr/local/src/faiss-serving/src/faiss_serving /faiss_serving
+
+ENTRYPOINT ["/faiss_serving"]
